@@ -17,7 +17,7 @@ class SteamScreenshotRSS
           item.link = screenshot.details_url
           item.title = screenshot.title
           item.updated = screenshot.date.to_s
-          item.summary = screenshot.medium_url
+          item.summary = screenshot.full_size_url || screenshot.medium_url
         end
       end
     end

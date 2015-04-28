@@ -18,7 +18,13 @@ class SteamFetcher
         image = link.at('img')
         description = link.at('.imgWallHoverDescription')
         title = description ? description.text.strip : nil
-        medium_url = image.attributes['src']
+        medium_url = image.attributes['src'].to_s
+        if medium_url =~ /\.resizedimage$/
+          size_part = medium_url.split('/').last # e.g., 640x359.resizedimage
+          full_size_url = medium_url.split(size_part).first
+        else
+          full_size_url = nil
+        end
         latest_date = Time.now
         image_row = get_image_wall_row(link.parent)
         if image_row
@@ -40,7 +46,8 @@ class SteamFetcher
           details_url: details_url,
           title: title,
           medium_url: medium_url,
-          date: latest_date
+          date: latest_date,
+          full_size_url: full_size_url
         })
       end
     end
