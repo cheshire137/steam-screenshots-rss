@@ -1,12 +1,19 @@
 class SteamFetcher
-  attr_reader :steam_user
-
-  def initialize steam_user
-    @steam_user = steam_user
+  def self.get_screenshot_app details_url
+    agent = Mechanize.new
+    details = nil
+    agent.get(details_url) do |page|
+      link = page.search('.screenshotAppName a')[0]
+      app_url = link.attributes['href'].to_s
+      app_name = link.text.strip
+      details = SteamApp.new(url: app_url, name: app_name)
+    end
+    details
   end
 
-  def get_screenshots
-    steam_url = "http://steamcommunity.com/id/#@steam_user/" +
+  def self.get_screenshots steam_user
+    # e.g., http://steamcommunity.com/id/cheshire137/screenshots/?appid=0&sort=newestfirst&browsefilter=myfiles&view=grid
+    steam_url = "http://steamcommunity.com/id/#{steam_user}/" +
                 'screenshots/?appid=0&sort=newestfirst&' +
                 'browsefilter=myfiles&view=grid'
     screenshots = []
@@ -42,7 +49,7 @@ class SteamFetcher
             latest_date = dates.last
           end
         end
-        screenshots << Screenshot.new({
+        screenshots << SteamScreenshot.new({
           details_url: details_url,
           title: title,
           medium_url: medium_url,
@@ -54,9 +61,7 @@ class SteamFetcher
     screenshots
   end
 
-  private
-
-  def get_image_wall_row current_node
+  def self.get_image_wall_row current_node
     return unless current_node
     css_class = current_node.attributes['class']
     if css_class && css_class.value.include?('imageWallRow')
@@ -65,7 +70,7 @@ class SteamFetcher
     get_image_wall_row current_node.parent
   end
 
-  def get_image_row_dates_el current_node
+  def self.get_image_row_dates_el current_node
     return unless current_node
     css_class = current_node.attributes['class']
     if css_class && css_class.value.include?('image_grid_dates')

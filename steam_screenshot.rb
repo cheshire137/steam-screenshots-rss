@@ -1,4 +1,4 @@
-class Screenshot
+class SteamScreenshot
   attr_reader :details_url, :title, :medium_url, :date, :full_size_url
 
   def initialize data
