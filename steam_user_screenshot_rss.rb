@@ -1,4 +1,4 @@
-class SteamScreenshotRSS
+class SteamUserScreenshotRSS
   attr_reader :steam_user, :rss_url
 
   def initialize steam_user, rss_url
