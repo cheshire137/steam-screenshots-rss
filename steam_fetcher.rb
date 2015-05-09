@@ -23,7 +23,7 @@ class SteamFetcher
         onclick = card.attributes['onclick'].to_s
         details_url = onclick.split("', '")[1]
         image = card.at('.apphub_CardContentPreviewImage')
-        medium_url = image.attributes['src'].to_s
+        medium_url = clean_url(image.attributes['src'].to_s)
         full_size_url = get_full_size_url(medium_url)
         title = card.at('.apphub_CardMetaData .apphub_CardContentTitle').text.strip
         user_link = card.search('.apphub_CardContentAuthorBlock ' +
@@ -47,6 +47,12 @@ class SteamFetcher
     end
   end
 
+  def self.clean_url url
+    if url && (query_start=url.index('?'))
+      url[0...query_start]
+    end
+  end
+
   def self.get_user_screenshots steam_user
     # e.g., http://steamcommunity.com/id/cheshire137/screenshots/?appid=0&sort=newestfirst&browsefilter=myfiles&view=grid
     steam_url = "http://steamcommunity.com/id/#{steam_user}/" +
@@ -60,7 +66,7 @@ class SteamFetcher
         image = link.at('img')
         description = link.at('.imgWallHoverDescription')
         title = description ? description.text.strip : nil
-        medium_url = image.attributes['src'].to_s
+        medium_url = clean_url(image.attributes['src'].to_s)
         full_size_url = get_full_size_url(medium_url)
         latest_date = Time.now
         image_row = get_image_wall_row(link.parent)
