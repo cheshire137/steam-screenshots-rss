@@ -64,6 +64,7 @@ class SteamFetcher
       links.each do |link|
         details_url = link.attributes['href']
         image = link.at('img')
+        next unless image
         description = link.at('.imgWallHoverDescription')
         title = description ? description.text.strip : nil
         medium_url = clean_url(image.attributes['src'].to_s)
