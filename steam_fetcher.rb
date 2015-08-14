@@ -1,3 +1,5 @@
+require 'date'
+
 class SteamFetcher
   def self.get_screenshot_app details_url
     agent = Mechanize.new
@@ -63,56 +65,43 @@ class SteamFetcher
       links = page.search('#image_wall .imageWallRow .profile_media_item')
       links.each do |link|
         details_url = link.attributes['href']
-        image = link.at('img')
-        next unless image
         description = link.at('.imgWallHoverDescription')
         title = description ? description.text.strip : nil
-        medium_url = clean_url(image.attributes['src'].to_s)
-        full_size_url = get_full_size_url(medium_url)
-        latest_date = Time.now
-        image_row = get_image_wall_row(link.parent)
-        if image_row
-          dates_container = get_image_row_dates_el(image_row)
-          if dates_container
-            date_range = dates_container.at('.image_grid_title').text.strip
-            date_strs = date_range.split(' - ')
-            dates = date_strs.map {|str|
-              begin
-                Date.parse(str)
-              rescue
-                nil
-              end
-            }
-            latest_date = dates.last
-          end
-        end
-        screenshots << SteamScreenshot.new({
-          details_url: details_url,
-          title: title,
-          medium_url: medium_url,
-          date: latest_date,
-          full_size_url: full_size_url
-        })
+        screenshots << {title: title, details_url: details_url}
       end
     end
-    screenshots
+    screenshots.map {|basic_info|
+      details = get_screenshot_details(basic_info[:details_url])
+      SteamScreenshot.new(basic_info.merge(details))
+    }
   end
 
-  def self.get_image_wall_row current_node
-    return unless current_node
-    css_class = current_node.attributes['class']
-    if css_class && css_class.value.include?('imageWallRow')
-      return current_node
+  def self.get_screenshot_details details_url
+    details = {}
+    Mechanize.new.get(details_url) do |page|
+      link = page.at('.actualmediactn a')
+      details[:full_size_url] = link.attributes['href']
+      img = link.at('img')
+      details[:medium_url] = img.attributes['src']
+      author = page.at('.creatorsBlock')
+      details[:user_name] = author.at('.friendBlockContent').text.strip
+      author_link = author.at('.friendBlockLinkOverlay')
+      details[:user_url] = author_link.attributes['href']
+      metadata = page.search('.detailsStatsContainerRight .detailsStatRight')
+      date_el = metadata[1]
+      details[:date] = parse_details_page_date(date_el.text.strip)
     end
-    get_image_wall_row current_node.parent
+    details
   end
 
-  def self.get_image_row_dates_el current_node
-    return unless current_node
-    css_class = current_node.attributes['class']
-    if css_class && css_class.value.include?('image_grid_dates')
-      return current_node
+  # e.g., Mar 2, 2014 @ 12:55pm
+  # e.g., Jul 4 @ 1:17pm
+  def self.parse_details_page_date raw_date_str
+    if raw_date_str.include? ','
+      format = '%b %d, %Y @ %l:%M%P'
+    else
+      format = '%b %d @ %l:%M%P'
     end
-    get_image_row_dates_el current_node.previous
+    DateTime.strptime(raw_date_str, format)
   end
 end
