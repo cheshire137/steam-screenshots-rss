@@ -70,7 +70,7 @@ class SteamFetcher
         screenshots << {title: title, details_url: details_url}
       end
     end
-    screenshots.map {|basic_info|
+    screenshots[0...10].map {|basic_info|
       details = get_screenshot_details(basic_info[:details_url])
       SteamScreenshot.new(basic_info.merge(details))
     }
