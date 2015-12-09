@@ -27,4 +27,4 @@ your Steam name! Choose 'New feed item' for the IFTTT trigger.
 
 For a Tumblr recipe, the following works:
 
-![Tumblr IFTTT recipe](https://raw.githubusercontent.com/moneypenny/steam-screenshots-rss/master/ifttt-screenshot.png)
+![Tumblr IFTTT recipe](https://raw.githubusercontent.com/cheshire137/steam-screenshots-rss/master/ifttt-screenshot.png)
